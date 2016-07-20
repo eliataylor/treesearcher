@@ -8,7 +8,6 @@
  * 
  */
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +57,11 @@ public class Tree {
 		this.visited = visited;
 	}
 
+	// this orders all branches & leafs by their smallest size
+	// breaches are searched last. this might be better 
+	// if Node and Tree were separate classes, but is only 
+	// really a good choice if nodes are very largely variable sizes 
 	public Map<String, Tree> flattenTreeBySize(Tree child) {
-		//Tree child = node.getLeaves().get(i);
 		String key = String.valueOf(child.getLeaves().size()).concat("_");
 		while(map.containsKey(key)) {
 			key = key.concat("_");

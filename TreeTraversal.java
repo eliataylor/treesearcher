@@ -1,3 +1,4 @@
+
 /*
  *       a
  *      / \
@@ -23,18 +24,15 @@
  * Implement search functionality using a method with the footprint: Tree firstMatch(Tree, Regex). This method takes a tree, searches that tree for leaves/branches in which the data  matches the given regex expression and returns the first branch/leaf (another Tree object) that matches. You should implement two different search algorithms: a Depth-First Search (DFS), and another search algorithm of your choice.
  * 
  * EXAMPLE TESTS:
- * java TreeTraversal b bfs 1
- * java TreeTraversal i bfs 1
- * java TreeTraversal b dfs 1
- * java TreeTraversal i dfs 1
+ * java TreeTraversal "(808)" dfs 2
+ * java TreeTraversal "([09])" dfs 2
+ * java TreeTraversal "(f)" bfs 2 
+ * java TreeTraversal "(-$test)" dfs 2
  * 
  */
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -51,80 +49,75 @@ public class TreeTraversal {
 	public Tree getFoundNode() {
 		return foundNode;
 	}
-	 
-	public void bfsish (Tree tree, String regex) {
+
+	public void bfsish(Tree tree, String regex) {
 		if (tree == null || isEmpty(tree.getData()) || isEmpty(regex)) {
 			return;
 		}
 
 		Pattern pattern;
 		try {
-			pattern = Pattern.compile(regex, Pattern.UNICODE_CASE);
-        } catch (PatternSyntaxException exception) {
-            System.err.println(exception.getDescription());
-            return;
-        }
+			pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		} catch (PatternSyntaxException exception) {
+			System.err.println(exception.getDescription());
+			return;
+		}
 
 		Map<String, Tree> order = tree.flattenTreeBySize(tree);
 		for (Map.Entry<String, Tree> child : order.entrySet()) {
 			Tree node = child.getValue();
-			if (logLevel > 0) 
-				System.out.println(node.getData() + " has " + child.getKey() + " children");
-			
-			if (node.getData().equals(regex)) {
-				this.setFoundNode(node);
-				return;			
-			} 
+			if (logLevel > 0)
+				System.out.println("-" + node.getData() + " has " + child.getKey() + " children");
+
 			Matcher matcher = pattern.matcher(node.getData());
 			while (matcher.find()) {
+				if (logLevel > 1)
+					System.out.println("--regex match: " + matcher.group() + " of " + matcher.groupCount());
 				if (matcher.groupCount() > 0) {
 					this.setFoundNode(node);
 					return;
 				}
 			}			
-			
 		}
-		
+
 	}
-	
+
 	public void dfs(Tree node, String regex) {
 		if (node == null || isEmpty(node.getData()) || isEmpty(regex)) {
 			return;
 		}
 
+		if (logLevel > 0)
+			System.err.println("-testing ".concat(node.getData()));
+
+
 		Pattern pattern;
 		try {
 			pattern = Pattern.compile(regex, Pattern.UNICODE_CASE);
-        } catch (PatternSyntaxException exception) {
-            System.err.println(exception.getDescription());
-            return;
-        }
-		
-		if (logLevel > 0) System.err.println("testing ".concat(node.getData()));
-		
-		if (node.getData().equals(regex)) {
-			this.setFoundNode(node);
-			return;			
-		} 
-		
+		} catch (PatternSyntaxException exception) {
+			System.err.println(exception.getDescription());
+			return;
+		}
 		Matcher matcher = pattern.matcher(node.getData());
 		while (matcher.find()) {
 			if (matcher.groupCount() > 0) {
+				if (logLevel > 1)
+					System.out.println("--regex match: " + matcher.group() + " of " + matcher.groupCount());
 				this.setFoundNode(node);
 				return;
 			}
 		}
-		
+
 		if (node.getLeaves().size() > 0) {
 			List<Tree> children = node.getLeaves();
-			if (logLevel > 0) System.err.println(node.getData() + " has " + children.size() + " leaves"); 
+			if (logLevel > 0)
+				System.err.println(node.getData() + " has " + children.size() + " leaves");
 			for (int i = 0; i < children.size(); i++) {
 				dfs(children.get(i), regex); // recursion
 			}
 		}
 	}
 
-	
 	public static boolean isEmpty(List<String> list) {
 		if (list == null || list.size() == 0) {
 			return true;
@@ -144,51 +137,54 @@ public class TreeTraversal {
 
 	public static void main(String[] args) {
 		TreeTraversal treeTraversal = new TreeTraversal();
-		String regex = "equals";
+		String regex = "^.";
 		String algo = "dfs";
-		if (args.length > 0) regex = args[0]; 
-		if (args.length > 1) algo = args[1];
-		if (args.length > 2) logLevel = Integer.parseInt(args[2]);
+		if (args.length > 0)
+			regex = args[0].trim();
+		if (args.length > 1)
+			algo = args[1];
+		if (args.length > 2)
+			logLevel = Integer.parseInt(args[2]);
 		treeTraversal.firstMatch(regex, algo); // testing
 	}
-	
+
 	public Tree buildTree() {
 
-		//Tree tree = new Tree("root", nodeA);
+		// Tree tree = new Tree("root", nodeA);
 		Tree nodeA = new Tree("root");
-		Tree nodeB = new Tree("b");
-		Tree nodeC = new Tree("c");
-		Tree nodeD = new Tree("d");
-		Tree nodeE = new Tree("e");
+		Tree nodeB = new Tree("b-eli@taylormadetraffic.com");
+		Tree nodeC = new Tree("8088555665");
+		Tree nodeD = new Tree("d-425 1st Street");
+		Tree nodeE = new Tree("e-San Francisco, CA");
 		Tree nodeF = new Tree("f");
-		Tree nodeG = new Tree("g");
-		Tree nodeH = new Tree("h");
-
+		Tree nodeG = new Tree("g-$test%");
+		Tree nodeH = new Tree("h-c1_+#x33");
 
 		nodeB.addLeaf(nodeD);
 		nodeB.addLeaf(nodeE);
 		nodeB.addLeaf(nodeF);
-		
+
 		nodeC.addLeaf(nodeG);
 		nodeG.addLeaf(nodeH);
 
 		nodeA.addLeaf(nodeB);
 		nodeA.addLeaf(nodeC);
 		nodeA.addLeaf(nodeG);
-		
+
 		return nodeA;
 	}
-	
 
 	public void firstMatch(String regex, String algo) {
 		Tree tree = buildTree();
-		if (algo.equalsIgnoreCase("dfs")) dfs(tree, regex);
-		else bfsish(tree, regex);
-		Tree foundNode = getFoundNode(); // getting the found node
+		if (algo.equalsIgnoreCase("dfs"))
+			dfs(tree, regex);
+		else
+			bfsish(tree, regex);
+		Tree foundNode = getFoundNode();
 		if (foundNode != null) {
-			System.out.println("Found " + foundNode.getData() + " using dfs"); // printing correct node
+			System.out.println("Found " + foundNode.getData() + " using dfs with " + regex); // printing
 		} else {
 			System.out.println("No node found with '" + regex + "'");
 		}
-	}	
+	}
 }
